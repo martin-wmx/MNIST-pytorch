@@ -1,3 +1,26 @@
+# 使用教程
+
+代码下载地址：https://gitee.com/martin64/mnist-pytorch
+
+**模型训练**
+
+运行CNN文件下的train.py文件训练卷积神经网络模型，训练完成后会生成文件cnn_trained_model.pth
+
+运行FC文件下的train.py文件训练全连接神经网络模型，训练完成后会生成文件fc_trained_model.pth
+
+
+
+**模型测试**
+
+1. 在my_mnist_dateset/classify文件夹下的10个文件夹下放入对应的手写数字图片，图片长和宽随意，注意图片要是白底黑字的。
+2. 运行make_ours_dataset.py，它会自动将白底黑字图片转换为黑底白字，并自动生成标签。
+3. 如果要测试训练好的CNN模型，请运行CNN文件夹下的trained_model_test.py
+4. 如果要测试训练好的FC模型，请运行FC文件下的trained_model_test.py
+
+
+
+**模型在训练过程中会自动显示训练进度，有无cuda均可以训练。**
+
 # MNIST介绍
 
 MNIST数据集来自美国国家标准与技术研究所，National Institute of Standards and Technology(NIST). 训练集由250个不同人手写的数字构成，其中50%是高中学生，50%来自人户普查局的工作人员。测试集也是同样比例的手写数字数据。
@@ -233,10 +256,10 @@ class Net(torch.nn.Module):
 
 [python制作自己的数据集](https://blog.csdn.net/zhangjunp3/article/details/79627824?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522162772919416780274116746%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=162772919416780274116746&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduend~default-1-79627824.first_rank_v2_pc_rank_v29&utm_term=python%E5%88%B6%E4%BD%9C%E8%87%AA%E5%B7%B1%E7%9A%84%E6%95%B0%E6%8D%AE%E9%9B%86&spm=1018.2226.3001.4187)
 
-在当前项目下新建一个文件夹，命名为MyMnistTest,在MyMnistTest文件夹下新建3个文件夹，classify、images、labels。
+在当前项目下新建一个文件夹，命名为my_mnist_dateset,在my_mnist_dateset文件夹下新建3个文件夹，classify、images、labels。
 
 - classify文件夹下有10个文件夹，保存未处理的手写图片，比如1文件夹保存数字1的手写图片，依次类推。
-- image文件夹保存从classify文件夹中读取的所有图片，并resize成28×28大小。
+- image文件夹保存从classify文件夹中读取的所有图片。
 - labels文件夹保存标签。
 
 整个目录树如图所示。
@@ -245,9 +268,7 @@ class Net(torch.nn.Module):
 
 ## 手写图片制作
 
-打开画板，写一些数字，然后用图片编辑软件裁剪图片，使得数字大概在裁剪图片的中心，然后用颜色反转，保证图片的背景色是黑色，数字部分为白色。我这里用的工具是画板和FastStone Capture两个工具。
-
-- 画板：在画板上写数字
+打开画板，写一些数字，然后用图片编辑软件裁剪图片，使得数字大概在裁剪图片的中心。
 
 我手写的10个数字如下：
 
@@ -255,7 +276,7 @@ class Net(torch.nn.Module):
 
 ## 图片批处理与标签生成
 
-由于MNIST的标准图片是28×28的，所以如果要进行测试，我们自己制作的图片也要是28×28的。我们可以运行**makeOursDataSet.py**进行批处理。这样就会把image文件下的图片都更改成28×28大小的图片。
+由于MNIST的标准图片是28×28的，所以如果要进行测试，我们自己制作的图片也要是28×28的。我们可以运行**make_ours_dataset.py**进行批处理。这样就会把image文件下的图片都更改成28×28大小的图片。
 
 下图是图片批处理后的效果。
 

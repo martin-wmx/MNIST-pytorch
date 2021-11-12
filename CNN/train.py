@@ -53,9 +53,10 @@ def train(epoch):
                                                                  epochs,
                                                                  loss)
 
-        if epoch == 30:
+        # 如果训练到第10轮，学习率就变为之前的0.1倍
+        if epoch == 10:
             for param_group in optimizer.param_groups:
-                param_group['lr'] *= 0.1  # 学习率为之前的0.1倍
+                param_group['lr'] *= 0.1
 
 
 # 验证函数
@@ -84,7 +85,7 @@ def validate(epoch):
 
 if __name__ == '__main__':
     # 训练周期
-    epochs = 50
+    epochs = 30
 
     for i in range(epochs):
         train(i)
