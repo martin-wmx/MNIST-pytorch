@@ -6,7 +6,7 @@ MNIST数据集分为2个部分，分别含有6000张训练图片和1000张测试
 
 每一张图片图片的大小都是28×28，而且图片的背景色为黑色，字迹为白色。原始图像如下图：
 
-![mnistOriginImages](https://gitee.com/martin64/pytorch/raw/master/images/mnistOriginImages.jpg)
+![mnistOriginImages](https://gitee.com/martin64/mnist-pytorch/raw/master/images/mnistOriginImages.jpg)
 
 如果是用pytorch，我们可以用下面的代码来下载MNIST数据集。
 
@@ -31,7 +31,7 @@ test_dataset = datasets.MNIST(root='../dataset/mnist/', train=False, download=Tr
 - t10k_images：测试集图片
 - t10k_labels：测试集标签
 
-![mnistSet](https://gitee.com/martin64/pytorch/raw/master/images/mnistSet.jpg)
+![mnistSet](https://gitee.com/martin64/mnist-pytorch/raw/master/images/mnistSet.jpg)
 
 直接下载下来的数据是无法通过解压或者应用程序打开的，因为这些文件不是任何标准的图像格式而是以字节的形式存储的，如果你想看具体的MNIST数据集图像，可以参考下面的链接：
 
@@ -43,7 +43,7 @@ test_dataset = datasets.MNIST(root='../dataset/mnist/', train=False, download=Tr
 
 全连接神经网络特点是在隐藏层的每一层中，上一层的每一个神经元都与下一层所有神经元相连。一个神经网络的示例如下：
 
-![FCExample](https://gitee.com/martin64/pytorch/raw/master/images/FCExample.jpg)
+![FCExample](https://gitee.com/martin64/mnist-pytorch/raw/master/images/FCExample.jpg)
 
 神经网络的训练主要是前向传播后计算损失函数，然后反向传播，依次更新权重。
 
@@ -64,46 +64,9 @@ transform = transforms.Compose([
 ])
 ```
 
-### 为什么输入的是行向量
-
-在学习线性代数时，
-$$
-wx=y
-$$
-其中，x是输入的列向量，y是输出的列向量，w是权重矩阵。假设x是m×1的列向量，y是n×1的列向量，那么w应该是n×m的矩阵。
-
-那么在pytorch神经网络中是这样么？
-
-我们可以定义一个简单的神经网络，然后验证一下：
-
-```python
-import torch
-
-class Net(torch.nn.Module):
-    def __init__(self):
-        super(Net, self).__init__();
-        self.linear = torch.nn.Linear(5, 10);
-
-    def forward(self,input):
-        y=self.linear1(input);
-        return y;
-
-model = Net();
-
-print(model.linear.weight.shape);
-```
-
-在上面的代码中，我们定义了一个1个线性层，然后打印这个权重矩阵，结果是`torch.Size([10, 5]`)，确实和我们上面讨论的是一样的。
-
-但是这个神经网络的输入应该是一个5×1的向量么？实际上如果这么做，就会报错。我们应该输入一个行向量，而不是列向量。你可以打印每一层的输出，它们依然是行向量。
-
-但是权重矩阵的shape满足列向量，而输入却不能是列向量，那不是自相矛盾么？
-
-其中的原因我觉得是，在计算时pytorch会将行向量转置成列向量，计算时用列向量，打印输出时用行向量，因为方便打印。
-
 ### 构造神经网络
 
-MNIST数据集中的图片都是28×28大小的，而且是灰度图。而全连接神经网络的输入要是一个行向量，所以我们要把28×28的矩阵转换成28*28=764的行向量，作为神经网络的输入。
+MNIST数据集中的图片都是28×28大小的，而且是灰度图。而全连接神经网络的输入要是一个行向量，所以我们要把28×28的矩阵转换成28×28=764的行向量，作为神经网络的输入。
 
 ```
 x = x.view(-1, 784);
@@ -111,7 +74,7 @@ x = x.view(-1, 784);
 
 后面的依次是512,256,128,64,的线性层，由于我们是在做一个多分类问题，而且预测的值是0-9中的一个，所以最后的输出应该是一个1×10的行向量。具体网络结构如下图：
 
-![FCMnist](https://gitee.com/martin64/pytorch/raw/master/images/FCMnist.jpg)
+![FCMnist](https://gitee.com/martin64/mnist-pytorch/raw/master/images/FCMnist.jpg)
 
 全连接神经网络模型代码如下：
 
@@ -147,7 +110,7 @@ class Net(torch.nn.Module):
 
 ### 训练模型
 
-只要运行项目中的**FCMnist.py**代码就能训练神经网络了。
+只要运行项目中的**MNIST/FC/train.py**代码就能训练神经网络了。
 
 我们知道对于多分类问题，是用softmax函数，然后用one-hot编码来计算loss，但是上面的神经网络forward函数中并没有出现softmax函数，原因是在下面这行代码中，CrossEntropyLoss已经包含了softmax函数。
 $$
@@ -171,19 +134,19 @@ accurancy on test set:96 %
 accurancy on test set:96 %
 accurancy on test set:96 %
 
-上面是在我电脑上运行**FCMnist.py**后的准确率，如果你的准确率没那么高，可以在增加训练的次数。
+上面是在我电脑上运行后的准确率，如果你的准确率没那么高，可以在增加训练的次数。
 
 ### 训练后模型的保存
 
 训练完成后，我们可以保存训练好的模型，所以在FCMnist.py中最后一行加上了这样一行代码：
 
 ```python
-torch.save(model.state_dict(),"FCMnist.pth")
+torch.save(model.state_dict(),"fc_trained_model.pth")
 ```
 
-这样，在你项目的当前路径文件夹下，就会有一个FCMnist.pth文件。
+这样，在**MNIST/FC**文件夹下，就会有一个**fc_trained_model.pth**文件。
 
-**数据下载，训练，模型保存都在FCMnist.py代码中实现了，所以不需要改动任何代码，只要运行它就行了。**
+**数据下载，训练，模型保存都在MNIST/FC/train.py代码中实现了，所以不需要改动任何代码，只要运行它就行了。**
 
 ## 卷积神经网络
 
@@ -229,9 +192,9 @@ torch.save(model.state_dict(),"FCMnist.pth")
 
 整个神经网络的结构如下图所示(全连接神经网络部分由于输入320个输入太多，所以用16代替了)。
 
-<img src="https://gitee.com/martin64/pytorch/raw/master/images/CNN.jpg" alt="CNN" style="zoom: 80%;" />
+<img src="https://gitee.com/martin64/mnist-pytorch/raw/master/images/CNN.jpg" alt="CNN" style="zoom: 80%;" />
 
-<img src="https://gitee.com/martin64/pytorch/raw/master/images/CNN_FC.jpg" alt="CNN_FC" style="zoom: 25%;" />
+<img src="https://gitee.com/martin64/mnist-pytorch/raw/master/images/CNN_FC.jpg" alt="CNN_FC" style="zoom: 25%;" />
 
 卷积神经网络模型的代码：
 
@@ -278,18 +241,17 @@ class Net(torch.nn.Module):
 
 整个目录树如图所示。
 
-![contensTree](https://gitee.com/martin64/pytorch/raw/master/images/contentsTree.jpg)
+![contensTree](https://gitee.com/martin64/mnist-pytorch/raw/master/images/contentsTree.jpg)
 
 ## 手写图片制作
 
 打开画板，写一些数字，然后用图片编辑软件裁剪图片，使得数字大概在裁剪图片的中心，然后用颜色反转，保证图片的背景色是黑色，数字部分为白色。我这里用的工具是画板和FastStone Capture两个工具。
 
 - 画板：在画板上写数字
-- FastStone Capture: 负责截图，然后将图片颜色反转
 
 我手写的10个数字如下：
 
-![](https://gitee.com/martin64/pytorch/raw/master/images/digitaContens.jpg)
+![](https://gitee.com/martin64/mnist-pytorch/raw/master/images/digitaContens.jpg)
 
 ## 图片批处理与标签生成
 
@@ -297,13 +259,13 @@ class Net(torch.nn.Module):
 
 下图是图片批处理后的效果。
 
-![myHandWriting](https://gitee.com/martin64/pytorch/raw/master/images/digitHandWriting.jpg)
+![myHandWriting](https://gitee.com/martin64/mnist-pytorch/raw/master/images/digitHandWriting.jpg)
 
 
 
 同时，在labels文件夹下会自动生成labels.txt文件，里面保存了图片名称和对应的标签，如下图所示：
 
-![labels](https://gitee.com/martin64/pytorch/raw/master/images/labels.jpg)
+![labels](https://gitee.com/martin64/mnist-pytorch/raw/master/images/labels.jpg)
 
 
 

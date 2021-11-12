@@ -31,7 +31,7 @@ def test():
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
-            print("{},          {}".format(int(labels.item()), predicted.data.item()))
+            print("{}          {}".format(int(labels.item()), predicted.data.item()))
 
         print('CNN trained model： accuracy on my_mnist_dataset set:%d %%' % (100 * correct / total))
 

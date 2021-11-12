@@ -32,7 +32,7 @@ def test():
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
-            print("{},          {}".format(labels.item(), predicted.data.item()))
+            print("{}          {}".format(int(labels.item()), predicted.data.item()))
 
         print('FC trained model: accuracy on mymnist set:%d %%' % (100 * correct / total))
 

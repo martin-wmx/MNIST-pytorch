@@ -5,7 +5,6 @@ from torch.utils.data import DataLoader
 from model import CNN
 from tqdm import tqdm
 
-
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("using {} device.".format(device))
 
@@ -25,6 +24,7 @@ test_loader = DataLoader(test_dataset, shuffle=False, batch_size=64)
 
 # 生成神经网络实例
 model = CNN()
+model.to(device)
 
 # 损失函数和优化器
 criterion = torch.nn.CrossEntropyLoss()
@@ -37,19 +37,25 @@ def train(epoch):
     train_bar = tqdm(train_loader)
     for data in train_bar:
         images, labels = data
-
+        images, labels = images.to(device), labels.to(device)
+        # 梯度清零
         optimizer.zero_grad()
-
-        outputs = model(images.to(device))
-
-        loss = criterion(outputs, labels.to(device))
-
+        # 正向传播
+        outputs = model(images)
+        # 计算损失
+        loss = criterion(outputs, labels)
+        # 反向传播
         loss.backward()
+        # 权重更新
         optimizer.step()
-
+        # 进度条描述训练进度
         train_bar.desc = "train epoch[{}/{}] loss:{:.3f}".format(epoch + 1,
                                                                  epochs,
                                                                  loss)
+
+        if epoch == 30:
+            for param_group in optimizer.param_groups:
+                param_group['lr'] *= 0.1  # 学习率为之前的0.1倍
 
 
 # 验证函数
@@ -60,20 +66,25 @@ def validate(epoch):
         test_bar = tqdm(test_loader)
         for data in test_bar:
             images, labels = data
-            outputs = model(images.to(device))
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            # 得到预测值
             _, predicted = torch.max(outputs.data, dim=1)
-            total += labels.size(0)
-            correct += (predicted == labels.to(device)).sum().item()
-            # 进度条描述训练进度
-            test_bar.desc = "test epoch[{}/{}]".format(epoch + 1,
-                                                       epochs)
+            # 判断是否预测正确
+            correct += (predicted == labels).sum().item()
 
-        print('accuracy on test set:%d %%' % (100 * correct / total))
+            total += labels.size(0)
+
+            # 进度条描述训练进度
+            test_bar.desc = "validate epoch[{}/{}]".format(epoch + 1,
+                                                           epochs)
+
+        print('accuracy on validate set:%d %%\n' % (100 * correct / total))
 
 
 if __name__ == '__main__':
     # 训练周期
-    epochs = 30
+    epochs = 50
 
     for i in range(epochs):
         train(i)
