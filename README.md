@@ -2,6 +2,20 @@
 
 代码下载地址：https://gitee.com/martin64/mnist-pytorch
 
+项目目录说明：
+
+CNN文件夹是用来保存卷积神经网络模型代码，其中model.py,my_dataset.py都不需要运行
+
+FC文件夹是用来保存全连接神经网络模型代码，其中model.py,my_dataset.py都不需要运行
+
+dataset文件夹是保存MNIST官方数据集的文件夹，不需改动
+
+images文件夹是用来保存REAEDME.md文件中引用的图片的，不需改动
+
+my_mnist_dateset文件夹是用来保存自己手写数字图片与标签文件的，自己手写的图片请放在my_mnist_dateset/classify对应的文件夹中
+
+
+
 **模型训练**
 
 运行CNN文件下的train.py文件训练卷积神经网络模型，训练完成后会生成文件cnn_trained_model.pth
@@ -43,11 +57,7 @@ train_dataset = datasets.MNIST(root='../dataset/mnist/', train=True, download=Tr
 test_dataset = datasets.MNIST(root='../dataset/mnist/', train=False, download=True)
 ```
 
-下载后，在你当前项目下的相对路径../dataset/mnist文件夹下就会有mnist数据集的下载文件了。
-
-**注意：../的意思是当前项目文件夹的上一层，不熟悉的可以补一下绝对路径和相对路径的知识。**
-
-**其中**
+下载后，在你当前项目下的相对路径dataset文件夹下就会有mnist数据集的下载文件了。
 
 - train_images：训练集图片
 - train_labels：训练集标签
@@ -250,7 +260,7 @@ class Net(torch.nn.Module):
 
 ### 训练模型和模型保存
 
-只要运行**CNNMnist.py**就可以训练卷积神经网络了，然后会在当前路径的文件下生成一个**CNNMnist.pth**，这样就保存好了训练好的模型。
+只要运行**CNN/train.py**就可以训练卷积神经网络了，然后会在CNN文件下生成一个**cnn_trained_model.pth**，这样就保存好了训练好的模型。
 
 # 制作自己的数据集
 
@@ -264,25 +274,21 @@ class Net(torch.nn.Module):
 
 整个目录树如图所示。
 
-![contensTree](https://gitee.com/martin64/mnist-pytorch/raw/master/images/contentsTree.jpg)
+![myHandWriting](https://gitee.com/martin64/mnist-pytorch/raw/master/images/contentsTree.jpg)
 
 ## 手写图片制作
 
-打开画板，写一些数字，然后用图片编辑软件裁剪图片，使得数字大概在裁剪图片的中心。
+打开画板，写一些数字，然后用图片编辑软件裁剪图片，使得数字大概在裁剪图片的中心，然后在my_mnist_dateset/classify文件夹下的10个文件夹下放入对应的手写数字图片。
 
 我手写的10个数字如下：
 
-![](https://gitee.com/martin64/mnist-pytorch/raw/master/images/digitaContens.jpg)
+![myHandWriting](https://gitee.com/martin64/mnist-pytorch/raw/master/images/digitaContens.jpg)
 
 ## 图片批处理与标签生成
 
-由于MNIST的标准图片是28×28的，所以如果要进行测试，我们自己制作的图片也要是28×28的。我们可以运行**make_ours_dataset.py**进行批处理。这样就会把image文件下的图片都更改成28×28大小的图片。
-
-下图是图片批处理后的效果。
+运行**make_ours_dataset.py**，这样就会把my_mnist_dateset/classify文件下的图片转换为黑底白字
 
 ![myHandWriting](https://gitee.com/martin64/mnist-pytorch/raw/master/images/digitHandWriting.jpg)
-
-
 
 同时，在labels文件夹下会自动生成labels.txt文件，里面保存了图片名称和对应的标签，如下图所示：
 
@@ -300,45 +306,55 @@ class Net(torch.nn.Module):
 
 首先，和前面载入MNIST数据集一样，对于自己的数据集，也要先标准化。
 
-然后就是继承Dataset，写一个读取自己数据集的类，代码如下：
+**my_dataset.py**继承了Dataset，它能载入my_mnist_dateset文件夹下的E图片与标签，它是被**train.py**自动调用的，所以不用运行它。
+
+代码如下：
 
 ```python
+import torch
+import os
+from PIL import Image
+from torch.utils.data import Dataset
+
+
 class MyMnistDataset(Dataset):
-    def __init__(self, filePath):
+    def __init__(self, root, transform):
 
-        self.myMnistPath = filePath;
-        self.imagesData = [];
-        self.labelsData = [];
-        self.labelsDict = {};
+        self.myMnistPath = root
+        self.imagesData = []
+        self.labelsData = []
+        self.labelsDict = {}
+        self.trans = transform
 
-        self.loadLabelsDate();
-        self.loadImageData();
+        self.loadLabelsDate()
+        self.loadImageData()
 
     # 读取标签txt文件，并生成字典
     def loadLabelsDate(self):
-        labelsPath = os.path.join(self.myMnistPath, "labels", "labels.txt");
-        f = open(labelsPath);
-        lines = f.readlines();
+        labelsPath = os.path.join(self.myMnistPath, "labels", "labels.txt")
+        f = open(labelsPath)
+        lines = f.readlines()
         for line in lines:
-            name = line.split(' ')[0];
-            label = line.split(' ')[1];
-            self.labelsDict[name] = int(label);
+            name = line.split(' ')[0]
+            label = line.split(' ')[1]
+            self.labelsDict[name] = int(label)
 
     # 读取手写图片数据，并将图片数据和对应的标签组合在一起
     def loadImageData(self):
-        imagesFolderPath = os.path.join(self.myMnistPath, 'images');
-        imageFiles = os.listdir(imagesFolderPath);
+        imagesFolderPath = os.path.join(self.myMnistPath, 'images')
+        imageFiles = os.listdir(imagesFolderPath)
 
         for imageName in imageFiles:
-            imagePath = os.path.join(imagesFolderPath, imageName);
-            image = cv2.imread(imagePath);
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY);
+            imagePath = os.path.join(imagesFolderPath, imageName)
+            image = Image.open(imagePath)
+            grayImage = image.convert("L")
 
-            self.imagesData.append(image);
-            self.labelsData.append(self.labelsDict[imageName]);
+            imageTensor = self.trans(grayImage)
+            self.imagesData.append(imageTensor)
 
-        self.imagesData = torch.Tensor(self.imagesData).unsqueeze(1);
-        self.labelsData = torch.Tensor(self.labelsData);
+            self.labelsData.append(self.labelsDict[imageName])
+
+        self.labelsData = torch.Tensor(self.labelsData)
 
     # 重写魔法函数
     def __getitem__(self, index):
@@ -346,54 +362,17 @@ class MyMnistDataset(Dataset):
 
     # 重写魔法函数
     def __len__(self):
-        return len(self.labelsData);
+        return len(self.labelsData)
 
-#载入自己的数据集
-dataset = MyMnistDataset('my_mnist_dateset');
-test_loader = DataLoader(dataset=dataset, shuffle=False)
+
 ```
 
 
 
 ## 载入训练好的模型
 
-载入训练好的模型之前，我们需要定义一个和训练好的模型一样的神经网络，这样**FCMnist.pth**与**CNNMnist.pth**这两个文件中的参数才能正确嵌套在神经网络里面。
-
-比如FCTrainedModelTest.py代码是测试全连接神经网络在MyMnist数据集上的效果，**FCTrainedModelTest.py**定义的FCNet和**FCMnist.py**里面的Net结构是一样的，这样才能将**FCMnist.py**训练的模型（**FCMnist.pth**）加载在FCNet之中。
-
-```
-class FCNet(torch.nn.Module):
-    def __init__(self):
-        super(FCNet, self).__init__();
-        self.l1 = torch.nn.Linear(784, 512);
-        self.l2 = torch.nn.Linear(512, 256);
-        self.l3 = torch.nn.Linear(256, 128);
-        self.l4 = torch.nn.Linear(128, 64);
-        self.l5 = torch.nn.Linear(64, 10);
-        self.relu = torch.nn.ReLU();
-
-    def forward(self, x):
-        x = x.view(-1, 784);
-        x = self.l1(x);
-        x = self.relu(x);
-
-        x = self.l2(x);
-        x = self.relu(x);
-
-        x = self.l3(x);
-        x = self.relu(x);
-
-        x = self.l4(x);
-        x = self.relu(x);
-
-        x = self.l5(x);
-
-        return x;
-```
-
-运行**FCTrainedModelTest.py**就能加载**FCMnist.pth**,然后测试**FCMnist.pth**在自己数据集上的准确度。
-
-同理运行**CNNTrainedModelTest.py**就能加载**CNNMnist.pth**，然后测试**CNNMnist.pth**在自己数据集上的准确度。
+1. 如果要测试训练好的CNN模型，请运行CNN文件夹下的**trained_model_test.py**
+2. 如果要测试训练好的FC模型，请运行FC文件下的**trained_model_test.py**
 
 # 相关课程学习
 
