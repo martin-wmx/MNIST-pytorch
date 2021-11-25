@@ -1,0 +1,2 @@
+date
+echo "Hello World"
