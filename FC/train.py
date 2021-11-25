@@ -52,8 +52,8 @@ def train(epoch):
                                                                  epochs,
                                                                  loss)
 
-        # 如果训练到第10轮，学习率就变为之前的0.1倍
-        if epoch == 10:
+        # 如果训练到第30轮，学习率就变为之前的0.1倍
+        if epoch == 30:
             for param_group in optimizer.param_groups:
                 param_group['lr'] *= 0.1
 
@@ -83,8 +83,8 @@ def validate(epoch):
 
 
 if __name__ == '__main__':
-    # 训练周期 cnn
-    epochs = 30
+    # 训练周期
+    epochs = 50
 
     for i in range(epochs):
         train(i)

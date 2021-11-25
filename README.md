@@ -1,6 +1,6 @@
 # 使用教程
 
-代码下载地址：https://gitee.com/martin64/mnist-pytorch
+代码下载地址：[点我下载](https://gitee.com/martin64/mnist-pytorch)
 
 ![mnistOriginImages](https://gitee.com/martin64/mnist-pytorch/raw/master/images/projectFloder.jpg)
 
@@ -10,11 +10,11 @@
 
 
 
-项目目录说明：
+**项目目录说明：**
 
-CNN文件夹是用来保存卷积神经网络模型代码，其中**model.py,my_dataset.py**是被**train.py**自动调用的，都不需要运行
+CNN文件夹是用来保存卷积神经网络模型代码，其中**model.py,my_dataset.py**是被自动调用的，都不需要运行
 
-FC文件夹是用来保存全连接神经网络模型代码，其中**model.py,my_dataset.py**被**train.py**自动调用的，都不需要运行
+FC文件夹是用来保存全连接神经网络模型代码，其中**model.py,my_dataset.py**是被自动调用的，都不需要运行
 
 dataset文件夹是保存MNIST官方数据集的文件夹，不需改动
 
@@ -37,9 +37,32 @@ my_mnist_dateset文件夹是用来保存自己手写数字图片与标签文件�
 **模型测试**
 
 1. 在my_mnist_dateset/classify文件夹下的10个文件夹下放入对应的手写数字图片，图片长和宽随意，注意图片要是白底黑字的。
+
 2. 运行make_ours_dataset.py，它会自动将白底黑字图片转换为黑底白字，并自动生成标签。
+
 3. 如果要测试训练好的CNN模型，请运行CNN文件夹下的**trained_model_test.py**
+
 4. 如果要测试训练好的FC模型，请运行FC文件下的**trained_model_test.py**
+
+   
+
+**准确率参考：**
+
+<center>表1 不同模型不同设备在验证集上的最终准确率</center>
+
+| model | CPU  | GPU  | epoch |
+| :---: | :--: | :--: | :---: |
+|  CNN  | 96%  | 97%  |  30   |
+|  FC   | 93%  | 92%  |  50   |
+
+​	
+
+<center>表2 不同模型不同设备在自己测试集上的最终准确率</center>
+
+| trained-model | CPU  | GPU  | Number of pictures |
+| :-----------: | :--: | :--: | :----------------: |
+|      CNN      | 70%  | 70%  |         10         |
+|      FC       | 50%  | 60%  |         10         |
 
 
 
@@ -163,19 +186,6 @@ criterion = torch.nn.CrossEntropyLoss();
 ```
 
 也就是说使用CrossEntropyLoss最后一层(线性层)是不需要做其他变化的；使用NLLLoss之前，需要对最后一层(线性层)先进行SoftMax处理，再进行log操作。 
-
- accurancy on test set:76 %
-accurancy on test set:90 %
-accurancy on test set:92 %
-accurancy on test set:94 %
-accurancy on test set:95 %
-accurancy on test set:96 %
-accurancy on test set:96 %
-accurancy on test set:96 %
-accurancy on test set:96 %
-accurancy on test set:96 %
-
-上面是在我电脑上运行后的准确率，如果你的准确率没那么高，可以在增加训练的次数。
 
 ### 训练后模型的保存
 
@@ -386,11 +396,11 @@ class MyMnistDataset(Dataset):
 
 本项目是在B站上学习 刘二大人 的课程 《Pytorch深度学习实践》后完善做成的，相关课程链接如下：
 
-https://www.bilibili.com/video/BV1Y7411d7Ys?from=search&seid=5291537098843647660
+[https://www.bilibili.com/video/BV1Y7411d7Ys?from=search&seid=5291537098843647660](https://www.bilibili.com/video/BV1Y7411d7Ys?from=search&seid=5291537098843647660)
 
 两外，CSDN博主 错错莫 将课程中的例子用代码实现了出来，相关链接如下：
 
-https://blog.csdn.net/bit452/category_10569531.html
+[https://blog.csdn.net/bit452/category_10569531.html](https://blog.csdn.net/bit452/category_10569531.html)
 
  
 
