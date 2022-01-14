@@ -1,9 +1,11 @@
 import torch
+import pandas as pd
+import numpy as np
 from torchvision import transforms
 from torchvision import datasets
 from torch.utils.data import DataLoader
-from model import CNN
 from tqdm import tqdm
+from model import CNN
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("using {} device.".format(device))
@@ -93,3 +95,6 @@ if __name__ == '__main__':
         validate(i)
 
     torch.save(model.state_dict(), "cnn_trained_model.pth")
+    epoch = np.arange(1, epochs + 1)
+    dataframe = pd.DataFrame({'epoch': epoch, 'train loss': train_loss, 'train accuracy': train_acc})
+    dataframe.to_csv(r"train.csv", index=False, sep=',')

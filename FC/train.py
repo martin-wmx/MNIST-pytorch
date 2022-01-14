@@ -1,4 +1,6 @@
 import torch
+import pandas as pd
+import numpy as np
 from torchvision import transforms
 from torchvision import datasets
 from torch.utils.data import DataLoader
@@ -11,6 +13,7 @@ print("using {} device.".format(device))
 
 # 将输入数据标准化,ToTensor将数据转换为张量，Normalize将数据标准化，其中0.13047是均值，0.3081是方差，这两个数据是经验值
 transform = transforms.Compose([
+    transforms.LinearTransformation(),
     transforms.ToTensor(),
     transforms.Normalize((0.1307,), (0.3081,))
 ])
@@ -29,9 +32,14 @@ model.to(device)
 criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
 
+train_loss = []
+train_acc = []
+epochs = 50
+
 
 # 训练函数
 def train(epoch):
+    total_loss = 0
     model.train()
     train_bar = tqdm(train_loader)
     for data in train_bar:
@@ -43,19 +51,24 @@ def train(epoch):
         outputs = model(images)
         # 计算损失
         loss = criterion(outputs, labels)
+        total_loss += loss.item()
         # 反向传播
         loss.backward()
         # 权重更新
         optimizer.step()
+
         # 进度条描述训练进度
         train_bar.desc = "train epoch[{}/{}] loss:{:.3f}".format(epoch + 1,
                                                                  epochs,
                                                                  loss)
 
-        # 如果训练到第30轮，学习率就变为之前的0.1倍
-        if epoch == 30:
-            for param_group in optimizer.param_groups:
-                param_group['lr'] *= 0.1
+    average_loss = total_loss / len(train_loader)
+    train_loss.append(average_loss)
+
+    # 如果训练到第30轮，学习率就变为之前的0.1倍
+    if epoch == epochs / 2:
+        for param_group in optimizer.param_groups:
+            param_group['lr'] *= 0.1
 
 
 # 验证函数
@@ -79,16 +92,21 @@ def validate(epoch):
             test_bar.desc = "validate epoch[{}/{}]".format(epoch + 1,
                                                            epochs)
 
-        print('accuracy on validate set:%d %%\n' % (100 * correct / total))
+        accuracy = 100 * correct / total
+        train_acc.append(accuracy)
+
+        print('accuracy on validate set:%d %%\n' % accuracy)
 
 
 if __name__ == '__main__':
     # 训练周期
-    epochs = 50
-
     for i in range(epochs):
         train(i)
 
         validate(i)
 
     torch.save(model.state_dict(), "fc_trained_model.pth")
+
+    epoch = np.arange(1, epochs + 1)
+    dataframe = pd.DataFrame({'epoch': epoch, 'train loss': train_loss, 'train accuracy': train_acc})
+    dataframe.to_csv(r"train.csv", index=False, sep=',')
