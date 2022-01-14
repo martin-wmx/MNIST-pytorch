@@ -1,2 +1,0 @@
-date
-echo "Hello World"
