@@ -56,6 +56,7 @@ def train(epoch):
                                                                                iteration)
     # 更新学习率
     scheduler.step()
+    print(optimizer.state_dict()['param_groups'][0]['lr'])
 
     loss = total_loss / len(train_loader)
     acc = 100 * total_correct / total_data

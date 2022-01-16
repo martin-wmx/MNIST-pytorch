@@ -22,6 +22,8 @@ my_mnist_dateset文件夹是用来保存自己手写数字图片与标签文件�
 
 **make_ours_dataset.py**文件是用来处理my_mnist_dateset文件夹下的图像并生成标签用的
 
+requirements.txt文件是环境配置文件
+
 #### **环境配置：**
 
 如果您用Windows系统的pycharm，可以下载zip文件后解压，然后打开这个目录。在pycharm的Terminal中输入以下命令行安装环境。
@@ -341,7 +343,7 @@ my_mnist_dateset文件夹下有三个文件夹，classify、images、labels。
 
 # 模型测试
 
-在训练神模型那一节，我们训练了两个神经网络，FC和CNN，并保存了训练好的模型，也就是**fc_trained_model.pth**与**cnn_trained_model.pth**两个文件，这两个文件保留了我们训练好模型的参数。
+在训练神模型那一节，我们训练了两个神经网络，FC和CNN，并保存了训练好的模型，也就是**CNN.pth**与**FC.pth**两个文件，这两个文件保留了我们训练好模型的参数。
 
 接下来我们要加载这两个训练好的模型，测试自己的数据集。
 
