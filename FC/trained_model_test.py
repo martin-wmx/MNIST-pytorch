@@ -17,7 +17,9 @@ test_loader = DataLoader(dataset=dataset, shuffle=False)
 
 # 生成全连接神经网络并载入训练好的模型
 model = FC()
-model.load_state_dict(torch.load("fc_trained_model.pth"))
+device_type = "GPU" if torch.cuda.is_available() else "CPU"
+print("loading {} trained model...".format(device_type))
+model.load_state_dict(torch.load("./{}/FC.pth".format(device_type)))
 
 
 def test():
@@ -32,7 +34,7 @@ def test():
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
-            print("{}          {}".format(int(labels.item()), predicted.data.item()))
+            print("  {}            {}".format(int(labels.item()), predicted.data.item()))
 
         print('FC trained model: accuracy on mymnist set:%d %%' % (100 * correct / total))
 

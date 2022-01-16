@@ -8,9 +8,7 @@
 
 **模型在训练过程中会自动显示训练进度，如果您的pytorch是CPU版本的，代码会自动选择CPU训练，如果有cuda，则会选择GPU训练。**
 
-
-
-**项目目录说明：**
+#### **项目目录说明：**
 
 CNN文件夹是用来保存卷积神经网络模型代码，其中**model.py,my_dataset.py**是被自动调用的，都不需要运行
 
@@ -24,17 +22,38 @@ my_mnist_dateset文件夹是用来保存自己手写数字图片与标签文件�
 
 **make_ours_dataset.py**文件是用来处理my_mnist_dateset文件夹下的图像并生成标签用的
 
+#### **环境配置：**
 
+如果您用Windows系统的pycharm，可以下载zip文件后解压，然后打开这个目录。在pycharm的Terminal中输入以下命令行安装环境。
 
-**模型训练**
+```shell
+cd MNIST-pytorch-master
+pip install -r requirements.txt
+```
 
-运行CNN文件下的train.py文件训练卷积神经网络模型，训练完成后会生成文件**cnn_trained_model.pth**
+如果您用Linux，可以输入以下命令行完成项目下载和环境配置
 
-运行FC文件下的train.py文件训练全连接神经网络模型，训练完成后会生成文件**fc_trained_model.pth**
+```shell
+git clone git@gitee.com:martin64/mnist-pytorch.git 
+cd MNIST-pytorch
+pip install -r requirements.txt 
+```
 
+#### **模型训练**
 
+运行CNN和FC文件夹下的**train.py**文件，会分别选择对应的神经网络进行训练。训练后生成**.pth**和**.csv**两个文件，前者保存训练好的模型权重，后者保存训练过程中准确率和损失数据。
 
-**模型测试**
+如果您是用CPU训练的，文件会保存在CPU文件夹下。如果是用GPU进行训练，文件会保存在GPU文件夹下。
+
+#### **训练结果可视化**
+
+运行CNN文件下的**plot.py**文件可以绘制CNN训练和验证阶段的准确率和损失曲线。
+
+运行FC文件下的**plot.py**文件可以绘制FC训练和验证阶段的准确率和损失曲线。
+
+**注意：运行plot文件会提醒您选择“CPU or GPU"，输入"CPU"会绘制CPU训练曲线，输入"GPU"会绘制GPU训练曲线。**
+
+#### **模型测试**
 
 1. 在my_mnist_dateset/classify文件夹下的10个文件夹下放入对应的手写数字图片，图片长和宽随意，注意图片要是白底黑字的。
 
@@ -52,8 +71,8 @@ my_mnist_dateset文件夹是用来保存自己手写数字图片与标签文件�
 
 | model | CPU  | GPU  | epoch |
 | :---: | :--: | :--: | :---: |
-|  CNN  | 96%  | 97%  |  30   |
-|  FC   | 93%  | 92%  |  50   |
+|  CNN  | 99%  | 97%  |  30   |
+|  FC   | 95%  | 92%  |  30   |
 
 ​	
 
@@ -61,7 +80,7 @@ my_mnist_dateset文件夹是用来保存自己手写数字图片与标签文件�
 
 | trained-model | CPU  | GPU  | Number of pictures |
 | :-----------: | :--: | :--: | :----------------: |
-|      CNN      | 70%  | 70%  |         10         |
+|      CNN      | 85%  | 80%  |         10         |
 |      FC       | 50%  | 60%  |         10         |
 
 
@@ -133,7 +152,7 @@ transform = transforms.Compose([
 MNIST数据集中的图片都是28×28大小的，而且是灰度图。而全连接神经网络的输入要是一个行向量，所以我们要把28×28的矩阵转换成28×28=764的行向量，作为神经网络的输入。
 
 ```
-x = x.view(-1, 784);
+x = x.view(-1, 784)
 ```
 
 后面的依次是512,256,128,64,的线性层，由于我们是在做一个多分类问题，而且预测的值是0-9中的一个，所以最后的输出应该是一个1×10的行向量。具体网络结构如下图：
@@ -187,7 +206,7 @@ criterion = torch.nn.CrossEntropyLoss();
 
 也就是说使用CrossEntropyLoss最后一层(线性层)是不需要做其他变化的；使用NLLLoss之前，需要对最后一层(线性层)先进行SoftMax处理，再进行log操作。 
 
-### 训练后模型的保存
+### 训练后模型权重、准确率和损失的保存
 
 训练完成后，我们可以保存训练好的模型，所以在FCMnist.py中最后一行加上了这样一行代码：
 
@@ -279,6 +298,12 @@ class Net(torch.nn.Module):
 ### 训练模型和模型保存
 
 只要运行**CNN/train.py**就可以训练卷积神经网络了，然后会在CNN文件下生成一个**cnn_trained_model.pth**，这样就保存好了训练好的模型。
+
+# **训练结果可视化**
+
+运行 CNN或者FC文件夹下的plot.py文件就能绘制训练过程中准确率和损失的变化曲线。
+
+
 
 # 制作自己的数据集
 

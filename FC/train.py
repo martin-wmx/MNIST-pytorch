@@ -1,54 +1,44 @@
 import torch
+import argparse
 import pandas as pd
 import numpy as np
+from torch.optim import lr_scheduler
 from torchvision import transforms
 from torchvision import datasets
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from model import FC
 
-# 查看是否有cuda如果没有，则用cpu
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print("using {} device.".format(device))
 
-# 将输入数据标准化,ToTensor将数据转换为张量，Normalize将数据标准化，其中0.13047是均值，0.3081是方差，这两个数据是经验值
-transform = transforms.Compose([
-    transforms.LinearTransformation(),
-    transforms.ToTensor(),
-    transforms.Normalize((0.1307,), (0.3081,))
-])
+def parse_opt():
+    parser = argparse.ArgumentParser(description='ResNet-MNIST')
+    parser.add_argument('--epochs', type=int, default=30, help='input total epoch')
+    parser.add_argument('--batch_size', type=int, default=64, help='dataloader batch size')
+    parser.add_argument('--lr', type=float, default=0.001, help='optimizer learning rate')
+    parser.add_argument('--weight_decay', type=float, default=0.00001, help='optimizer weight_decay')
 
-train_dataset = datasets.MNIST(root='../dataset/mnist/', train=True, download=True, transform=transform)
-train_loader = DataLoader(train_dataset, shuffle=True, batch_size=64)
-
-test_dataset = datasets.MNIST(root='../dataset/mnist/', train=False, download=True, transform=transform)
-test_loader = DataLoader(test_dataset, shuffle=False, batch_size=64)
-
-# 生成全连接网络模型实例
-model = FC()
-model.to(device)
-
-# 损失函数和优化器
-criterion = torch.nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
-
-train_loss = []
-train_acc = []
-epochs = 50
+    args = parser.parse_args()
+    return args
 
 
-# 训练函数
 def train(epoch):
     total_loss = 0
+    total_correct = 0
+    total_data = 0
+    global iteration
+
     model.train()
     train_bar = tqdm(train_loader)
     for data in train_bar:
         images, labels = data
         images, labels = images.to(device), labels.to(device)
+
         # 梯度清零
         optimizer.zero_grad()
         # 正向传播
         outputs = model(images)
+        _, predicted = torch.max(outputs.data, dim=1)
+        total_correct += torch.eq(predicted, labels).sum().item()
         # 计算损失
         loss = criterion(outputs, labels)
         total_loss += loss.item()
@@ -57,56 +47,103 @@ def train(epoch):
         # 权重更新
         optimizer.step()
 
-        # 进度条描述训练进度
-        train_bar.desc = "train epoch[{}/{}] loss:{:.3f}".format(epoch + 1,
-                                                                 epochs,
-                                                                 loss)
+        total_data += labels.size(0)
+        iteration = iteration + 1
 
-    average_loss = total_loss / len(train_loader)
-    train_loss.append(average_loss)
+        train_bar.desc = "train epoch[{}/{}] loss:{:.3f} iterations:{}".format(epoch + 1,
+                                                                               args.epochs,
+                                                                               loss,
+                                                                               iteration)
+    # 更新学习率
+    scheduler.step()
 
-    # 如果训练到第30轮，学习率就变为之前的0.1倍
-    if epoch == epochs / 2:
-        for param_group in optimizer.param_groups:
-            param_group['lr'] *= 0.1
+    loss = total_loss / len(train_loader)
+    acc = 100 * total_correct / total_data
+    train_loss.append(loss)
+    train_acc.append(acc)
+
+    print('accuracy on train set:%d %%' % acc)
 
 
 # 验证函数
 def validate(epoch):
-    correct = 0
-    total = 0
+    total_loss = 0
+    total_correct = 0
+    total_data = 0
     with torch.no_grad():
         test_bar = tqdm(test_loader)
         for data in test_bar:
             images, labels = data
             images, labels = images.to(device), labels.to(device)
+            # 正向传播
             outputs = model(images)
-            # 得到预测值
             _, predicted = torch.max(outputs.data, dim=1)
-            # 判断是否预测正确
-            correct += (predicted == labels).sum().item()
+            total_correct += torch.eq(predicted, labels).sum().item()
 
-            total += labels.size(0)
+            # 计算损失
+            loss = criterion(outputs, labels)
+            total_loss += loss.item()
+
+            total_data += labels.size(0)
 
             # 进度条描述训练进度
             test_bar.desc = "validate epoch[{}/{}]".format(epoch + 1,
-                                                           epochs)
+                                                           args.epochs)
 
-        accuracy = 100 * correct / total
-        train_acc.append(accuracy)
+        loss = total_loss / len(train_loader)
+        acc = 100 * total_correct / total_data
+        validate_loss.append(loss)
+        validate_acc.append(acc)
 
-        print('accuracy on validate set:%d %%\n' % accuracy)
+        print('accuracy on validate set:%d %%\n' % acc)
 
 
-if __name__ == '__main__':
-    # 训练周期
-    for i in range(epochs):
+if __name__ == "__main__":
+    args = parse_opt()
+    device_type = "GPU" if torch.cuda.is_available() else "CPU"
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print("using {} device.".format(device))
+
+    # 由于神经网络中数据对象为tensor，所以需要用transform将普通数据转换为tensor
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.1307,), (0.3081,))
+    ])
+
+    # 训练数据集，torchvision中封装了数据集的下载方式，调用下面函数就会自动下载
+    train_dataset = datasets.MNIST(root='../dataset/', train=True, download=True, transform=transform)
+    train_loader = DataLoader(train_dataset, shuffle=True, batch_size=args.batch_size)
+
+    # 测试数据集
+    test_dataset = datasets.MNIST(root='../dataset/', train=False, download=True, transform=transform)
+    test_loader = DataLoader(test_dataset, shuffle=False, batch_size=args.batch_size)
+
+    # 生成神经网络实例
+    model = FC()
+    model.to(device)
+
+    # 损失函数和优化器
+    criterion = torch.nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    # 设置动态学习率
+    scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
+
+    train_loss = []
+    train_acc = []
+    validate_loss = []
+    validate_acc = []
+    iteration = 1
+
+    for i in range(args.epochs):
         train(i)
-
         validate(i)
 
-    torch.save(model.state_dict(), "fc_trained_model.pth")
-
-    epoch = np.arange(1, epochs + 1)
-    dataframe = pd.DataFrame({'epoch': epoch, 'train loss': train_loss, 'train accuracy': train_acc})
-    dataframe.to_csv(r"train.csv", index=False, sep=',')
+    torch.save(model.state_dict(), "./{}/FC.pth".format(device_type))
+    epoch = np.arange(1, args.epochs + 1)
+    dataframe = pd.DataFrame({'epoch': epoch,
+                              'train loss': train_loss,
+                              'train accuracy': train_acc,
+                              'validate loss': validate_loss,
+                              'validate accuracy': validate_acc
+                              })
+    dataframe.to_csv(r"./{}/loss&acc.csv".format(device_type))
