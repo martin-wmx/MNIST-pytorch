@@ -73,8 +73,8 @@ pip install -r requirements.txt
 
 | model | CPU  | GPU  | epoch |
 | :---: | :--: | :--: | :---: |
-|  CNN  | 99%  | 97%  |  30   |
-|  FC   | 95%  | 92%  |  30   |
+|  CNN  | 99%  | 99%  |  30   |
+|  FC   | 95%  | 95%  |  30   |
 
 ​	
 
@@ -82,8 +82,8 @@ pip install -r requirements.txt
 
 | trained-model | CPU  | GPU  | Number of pictures |
 | :-----------: | :--: | :--: | :----------------: |
-|      CNN      | 85%  | 80%  |         10         |
-|      FC       | 50%  | 60%  |         10         |
+|      CNN      | 85%  | 85%  |         10         |
+|      FC       | 45%  | 50%  |         10         |
 
 
 
@@ -95,7 +95,9 @@ MNIST数据集分为2个部分，分别含有6000张训练图片和1000张测试
 
 每一张图片图片的大小都是28×28，而且图片的背景色为黑色，字迹为白色。原始图像如下图：
 
-![mnistOriginImages](https://gitee.com/martin64/mnist-pytorch/raw/master/images/mnistOriginImages.jpg)
+<img src="https://gitee.com/martin64/mnist-pytorch/raw/master/images/mnistOriginImages.jpg" alt="mnistOriginImages" style="zoom:50%;" />
+
+<center>图1 MNIST原始图像</center>
 
 如果是用pytorch，我们可以用下面的代码来下载MNIST数据集。
 
@@ -118,6 +120,8 @@ test_dataset = datasets.MNIST(root='../dataset/mnist/', train=False, download=Tr
 
 ![mnistSet](https://gitee.com/martin64/mnist-pytorch/raw/master/images/mnistSet.jpg)
 
+<center>图2 MNIST数据集格式</center>
+
 直接下载下来的数据是无法通过解压或者应用程序打开的，因为这些文件不是任何标准的图像格式而是以字节的形式存储的，如果你想看具体的MNIST数据集图像，可以参考下面的链接：
 
 [MNIST数据集读取](https://blog.csdn.net/panrenlong/article/details/81736754?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522162738630716780274134250%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=162738630716780274134250&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduend~default-1-81736754.first_rank_v2_pc_rank_v29&utm_term=mnist%E8%AF%BB%E5%8F%96&spm=1018.2226.3001.4187)
@@ -128,7 +132,9 @@ test_dataset = datasets.MNIST(root='../dataset/mnist/', train=False, download=Tr
 
 全连接神经网络特点是在隐藏层的每一层中，上一层的每一个神经元都与下一层所有神经元相连。一个神经网络的示例如下：
 
-![FCExample](https://gitee.com/martin64/mnist-pytorch/raw/master/images/FCExample.jpg)
+<img src="https://gitee.com/martin64/mnist-pytorch/raw/master/images/FCExample.jpg" alt="FCExample" style="zoom:50%;" />
+
+<center>图3 全连接神经网络示意图</center>
 
 神经网络的训练主要是前向传播后计算损失函数，然后反向传播，依次更新权重。
 
@@ -159,7 +165,9 @@ x = x.view(-1, 784)
 
 后面的依次是512,256,128,64,的线性层，由于我们是在做一个多分类问题，而且预测的值是0-9中的一个，所以最后的输出应该是一个1×10的行向量。具体网络结构如下图：
 
-![FCMnist](https://gitee.com/martin64/mnist-pytorch/raw/master/images/FCMnist.jpg)
+<img src="https://gitee.com/martin64/mnist-pytorch/raw/master/images/FCMnist.jpg" alt="FCMnist" style="zoom: 80%;" />
+
+<center>图4 网络结构设计图</center>
 
 全连接神经网络模型代码如下：
 
@@ -210,13 +218,12 @@ criterion = torch.nn.CrossEntropyLoss();
 
 ### 训练后模型权重、准确率和损失的保存
 
-训练完成后，我们可以保存训练好的模型，所以在FCMnist.py中最后一行加上了这样一行代码：
+训练完成后，我们可以保存训练好的模型和训练过程中的数据，所以在**train.py**中最后有以下代码：
 
 ```python
-torch.save(model.state_dict(),"fc_trained_model.pth")
+torch.save(model.state_dict(), "./{}/FC.pth".format(device_type))
+dataframe.to_csv(r"./{}/loss&acc.csv".format(device_type))
 ```
-
-这样，在**MNIST/FC**文件夹下，就会有一个**fc_trained_model.pth**文件。
 
 **数据下载，训练，模型保存都在MNIST/FC/train.py代码中实现了，所以不需要改动任何代码，只要运行它就行了。**
 
@@ -266,7 +273,9 @@ torch.save(model.state_dict(),"fc_trained_model.pth")
 
 <img src="https://gitee.com/martin64/mnist-pytorch/raw/master/images/CNN.jpg" alt="CNN" style="zoom: 80%;" />
 
-<img src="https://gitee.com/martin64/mnist-pytorch/raw/master/images/CNN_FC.jpg" alt="CNN_FC" style="zoom: 25%;" />
+<img src="https://gitee.com/martin64/mnist-pytorch/raw/master/images/CNN_FC.jpg" alt="CNN_FC" style="zoom: 50%;" />
+
+<center>图5 网络结构设计图</center>
 
 卷积神经网络模型的代码：
 
@@ -305,7 +314,23 @@ class Net(torch.nn.Module):
 
 运行 CNN或者FC文件夹下的plot.py文件就能绘制训练过程中准确率和损失的变化曲线。
 
+<img src="https://gitee.com/martin64/mnist-pytorch/raw/master/images/GPU_CNN_training_curve.jpeg" style="zoom:50%;" />
 
+<center>图6 CNN使用GPU训练</center>
+
+<img src="https://gitee.com/martin64/mnist-pytorch/raw/master/images/CPU_CNN_training_curve.jpeg" style="zoom:50%;" />
+
+
+
+<center>图7 CNN使用CPU训练</center>
+
+<img src="https://gitee.com/martin64/mnist-pytorch/raw/master/images/GPU_FC_training_curve.jpeg" style="zoom:50%;" />
+
+<center>图8 FC使用GPU训练</center>
+
+<img src="https://gitee.com/martin64/mnist-pytorch/raw/master/images/CPU_FC_training_curve.jpeg" style="zoom:50%;" />
+
+<center>图9 FC使用CPU训练</center>
 
 # 制作自己的数据集
 
