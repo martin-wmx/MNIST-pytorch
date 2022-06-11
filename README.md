@@ -1,10 +1,5 @@
 # 使用教程
 
-代码下载地址：[点我下载](https://gitee.com/martin64/mnist-pytorch)
-
-![mnistOriginImages](https://gitee.com/martin64/mnist-pytorch/raw/master/images/projectFloder.jpg)
-
-
 
 **模型在训练过程中会自动显示训练进度，如果您的pytorch是CPU版本的，代码会自动选择CPU训练，如果有cuda，则会选择GPU训练。**
 
